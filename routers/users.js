@@ -33,7 +33,7 @@ router.get(`/:id`, async (req, res) => {
 router.post(`/register`, async (req, res) => {
   const emailExistence = await User.findOne({ email: req.body.email });
   if (emailExistence) {
-    return res.status(400).send("email already exists");
+    return res.status(400).send({success:false,message:"email already exists"});
   }
   // console.log(req.body);
   let user = new User({
@@ -57,13 +57,11 @@ router.post(`/register`, async (req, res) => {
 router.post(`/login`, (req, res) => {
   User.findOne({ email: req.body.email }).then((user) => {
     if (!user) {
-      return res.status(400).send("user with this email not found");
+      return res.status(400).send({success:false, message:"user with this email not found"});
     }
     if (
       user &&
-      bcrypt.compareSync(req.body.passwordHash, user.passwordHash, {
-        expiresIn: "1d",
-      })
+      bcrypt.compareSync(req.body.passwordHash, user.passwordHash)
     ) {
       const token = jwt.sign(
         {
@@ -75,7 +73,7 @@ router.post(`/login`, (req, res) => {
       );
       res.status(200).send({ user: user.email, token: token });
     } else {
-      res.status(400).send("inncorrect password");
+      res.status(400).send({success:false, message:"incorrect password"});
     }
   });
 });
