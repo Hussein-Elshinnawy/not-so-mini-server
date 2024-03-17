@@ -52,15 +52,16 @@ router.get(`/`, async (req, res) => {
 
 router.get(`/:id`, async (req, res) => {
   Product.findById(req.params.id)
-    .populate("category", "-_id")
+    .populate("category")//, "-_id"
     .then((product) => {
+    
       if (!product) {
-        return res.status(400).send("no such product");
+        return res.status(400).send({success:false, messagae:"no such product"});
       }
       return res.send(product);
     })
     .catch((error) => {
-      return res.status(500).send({ success: false, error: error });
+      return res.status(500).send({ success: false, error: error.messagae });
     });
 });
 
@@ -164,14 +165,10 @@ router.get(`/get/count`, async (req, res) => {
 });
 
 
-router.put(
-  '/gallery-images/:id', 
-  uploadImages.array('images', 5), 
-  async (req, res)=> {
+router.put('/gallery-images/:id', uploadImages.array('images', 5), async (req, res)=> {
       if(!mongoose.isValidObjectId(req.params.id)) {
           return res.status(400).send('Invalid Product Id')
        }
-       console.log('hasbik');
        const files = req.files
        let imagesPaths = [];
        const basePath = `${req.protocol}://${req.get('host')}/images/upload/`;

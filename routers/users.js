@@ -71,7 +71,7 @@ router.post(`/login`, (req, res) => {
         process.env.TOKENSECRET
         // {expiresIn:'1d'},
       );
-      res.status(200).send({ user: user.email, token: token });
+      res.status(200).send({ user: user, token: token });
     } else {
       res.status(400).send({success:false, message:"incorrect password"});
     }
