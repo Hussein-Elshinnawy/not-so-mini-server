@@ -2,6 +2,7 @@ const { Order } = require("../models/order");
 const express = require("express");
 const router = express.Router();
 const { OrderItem } = require("../models/order-item");
+const mongoose= require("mongoose");
 
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
@@ -28,9 +29,9 @@ router.get(`/`, async (req, res) => {
   res.send(orderList);
 });
 
-router.get(`/:id`, async (req, res) => {
+router.get(`/`, async (req, res) => {
   // const order = await Order.findById(req.params.id).populate('user','name').populate({path:'orderItems', populate:{path:'product', populate:'category', select:'name _id'}});
-  const order = await Order.findById(req.params.id)
+  const order = await Order.find()
     .populate("user", "name")
     .populate({
       path: "orderItems",
@@ -43,12 +44,36 @@ router.get(`/:id`, async (req, res) => {
         },
       },
     });
-
   if (!order) {
     res.status(500).json({ success: false });
   }
   res.send(order);
 });
+
+router.get('/user/:id', async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(400).send('Invalid User Id');
+  }
+
+  const userOrders = await Order.find({ user: req.params.id })
+    .populate("user", "name")
+    .sort("-dateOrdered")
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: {
+          path: "category",
+        },
+      },
+    });
+
+  if (!userOrders) {
+    return res.status(500).json({ success: false, message: 'No orders found for this user.' });
+  }
+  res.send(userOrders);
+});
+
 
 router.post("/", async (req, res) => {
   const orderItemsIds = Promise.all(
@@ -88,7 +113,7 @@ router.post("/", async (req, res) => {
   order = await order.save();
 
   if (!order) {
-    return res.status(400).send("the order cannot be created!");
+    return res.status(400).send({success:false, message:"the order cannot be created!"});
   }
 
   res.send(order);

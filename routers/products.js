@@ -77,7 +77,6 @@ router.post(`/`, uploadImages.single('image'), async (req, res) => {
           let product = new Product({
         name: req.body.name,
         description: req.body.description,
-        richDescription: req.body.richDescription,
         price: req.body.price,
         image: `${basePath}${fileName}`,
         images: req.body.images,
@@ -86,11 +85,10 @@ router.post(`/`, uploadImages.single('image'), async (req, res) => {
         rating: req.body.rating,
         isAvailable: req.body.isAvailable,
       });
-
     product = await product.save();
 
     if(!product) 
-    return res.status(500).send('The product cannot be created')
+    return res.status(500).send({success:false, messagae:'The product cannot be created'})
 
     res.send(product);
  
@@ -107,7 +105,6 @@ router.put(`/:id`, (req, res) => {
         {
           name: req.body.name,
           description: req.body.description,
-          richDescription: req.body.richDescription,
           price: req.body.price,
           image: req.body.image,
           images: req.body.images,
@@ -172,7 +169,7 @@ router.put('/gallery-images/:id', uploadImages.array('images', 5), async (req, r
        const files = req.files
        let imagesPaths = [];
        const basePath = `${req.protocol}://${req.get('host')}/images/upload/`;
-
+      
        if(files) {
           files.map(file =>{
               imagesPaths.push(`${basePath}${file.filename}`);
@@ -193,4 +190,6 @@ router.put('/gallery-images/:id', uploadImages.array('images', 5), async (req, r
       res.send(product);
   }
 )
+
+
 module.exports = router;
